@@ -1,0 +1,17 @@
+venv
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.mypy_cache
+.env
+.git
+data/
+models/
+reports/
+artifacts/
+*.ipynb
+*.pkl
+*.joblib
+*.h5
+*.keras

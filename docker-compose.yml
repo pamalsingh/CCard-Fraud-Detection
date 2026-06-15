@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  demo:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      - PORT=8501
+    volumes:
+      - ./reports:/app/reports:ro
+      - ./models:/app/models:ro
+    restart: unless-stopped
