@@ -1,0 +1,13 @@
+streamlit>=1.0
+pandas>=1.0
+numpy>=1.19
+scikit-learn>=0.24
+joblib>=1.0
+plotly>=5.0
+openpyxl>=3.0
+fastapi>=0.70
+uvicorn[standard]>=0.15
+python-multipart>=0.0.5
+xgboost>=1.0
+# tensorflow is optional; enable if your DNN models require it
+tensorflow>=2.0

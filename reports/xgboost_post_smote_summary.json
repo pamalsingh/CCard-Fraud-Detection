@@ -1,0 +1,13 @@
+{
+  "model": "xgboost_post_smote",
+  "smote_used": true,
+  "precision": 0.8539325842696629,
+  "recall": 0.8,
+  "f1": 0.8260869565217391,
+  "roc_auc": 0.9674762093668621,
+  "pr_auc": 0.814058357781024,
+  "support_pos": 95,
+  "hyperparameters": "None",
+  "inference_latency_ms": 0.004897622467536861,
+  "run_timestamp": "2026-06-15T15:42:38.832664"
+}
