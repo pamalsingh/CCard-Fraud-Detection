@@ -19,22 +19,43 @@ def load_pickle(path: str):
 
 
 def load_model(path: str):
+    # Prefer Keras/TensorFlow loader for .h5/.keras/.hdf5 files or SavedModel dirs
     try:
-        return joblib.load(path)
-    except Exception:
+        if os.path.isdir(path) or path.lower().endswith(('.h5', '.keras', '.hdf5')):
+            try:
+                from tensorflow.keras.models import load_model as _keras_load
+            except Exception as e:
+                st.warning(f"TensorFlow/Keras not available: {e}")
+            else:
+                try:
+                    return _keras_load(path)
+                except Exception as e:
+                    st.warning(f"Keras load failed for {path}: {e}")
+
+        # Fallback to joblib / pickle for sklearn-like models
         try:
-            return load_pickle(path)
-        except Exception as e:
-            st.error(f"Failed to load model {path}: {e}")
-            return None
+            return joblib.load(path)
+        except Exception:
+            with open(path, "rb") as f:
+                return pickle.load(f)
+    except Exception as e:
+        st.error(f"Failed to load model {path}: {e}")
+        return None
 
 
 def get_available_models():
     if not os.path.isdir(MODELS_DIR):
         return []
-    files = [f for f in os.listdir(MODELS_DIR) if os.path.isfile(os.path.join(MODELS_DIR, f))]
-    model_files = [f for f in files if f.lower().endswith(('.pkl', '.joblib'))]
-    return model_files
+    entries = os.listdir(MODELS_DIR)
+    model_files = []
+    for e in entries:
+        full = os.path.join(MODELS_DIR, e)
+        if os.path.isfile(full) and e.lower().endswith(('.pkl', '.joblib', '.h5', '.keras', '.hdf5')):
+            model_files.append(e)
+        # detect TF SavedModel directory by presence of saved_model.pb
+        elif os.path.isdir(full) and os.path.exists(os.path.join(full, "saved_model.pb")):
+            model_files.append(e)
+    return sorted(model_files)
 
 
 def apply_preprocessors(df: pd.DataFrame, feature_cols, models_folder=MODELS_DIR):
@@ -169,6 +190,15 @@ def main():
             st.warning("Feature columns not detected. Please select input features from your uploaded data.")
             feature_cols = st.multiselect("Select feature columns to use for prediction", options=list(df.columns), default=list(df.columns))
 
+        # If user accidentally included the target column 'Class' or similar, remove it
+        removed_cols = []
+        for col_to_drop in ['Class', 'class', 'label', 'target']:
+            if col_to_drop in feature_cols:
+                feature_cols = [c for c in feature_cols if c != col_to_drop]
+                removed_cols.append(col_to_drop)
+        if removed_cols:
+            st.warning(f"Removed target column(s) from features: {', '.join(removed_cols)}")
+
         if not feature_cols:
             st.error("No feature columns selected — cannot predict.")
             return
@@ -176,6 +206,26 @@ def main():
         st.markdown(f"**Using {len(feature_cols)} features**")
 
         # Prepare data for prediction
+        # Validate feature count for Keras models
+        if model_obj is not None:
+            try:
+                # Keras models expose input_shape; sklearn models have n_features_in_
+                expected = None
+                if hasattr(model_obj, 'input_shape'):
+                    expected = int(model_obj.input_shape[-1]) if model_obj.input_shape is not None else None
+                elif hasattr(model_obj, 'n_features_in_'):
+                    expected = int(model_obj.n_features_in_)
+
+                if expected is not None and len(feature_cols) != expected:
+                    st.error(
+                        f"Model expects {expected} features but you selected {len(feature_cols)}. "
+                        "Ensure you exclude the target column and use the same feature order used during training, or place a `feature_columns.pkl` file in the `models/` folder."
+                    )
+                    return
+            except Exception:
+                # If any inspection fails, continue and let prediction handle shape errors
+                pass
+
         X_ready = apply_preprocessors(df, feature_cols)
 
         if model_obj is None:
