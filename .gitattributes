@@ -1,2 +1,4 @@
 data/raw/creditcard.csv filter=lfs diff=lfs merge=lfs -text
 models/rf_model_post_smote.pkl filter=lfs diff=lfs merge=lfs -text
+models/dnn_post_smote.h5 filter=lfs diff=lfs merge=lfs -text
+models/dnn_* filter=lfs diff=lfs merge=lfs -text
