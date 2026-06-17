@@ -49,11 +49,17 @@ def save_keras_model(
     dir_path
 ):
     """Save a Keras model to a directory or HDF5 file."""
-    os.makedirs(os.path.dirname(dir_path) if os.path.splitext(dir_path)[1] else dir_path, exist_ok=True)
-    # If dir_path ends with .h5 or .keras, save as file; otherwise save as TF SavedModel directory
-    if dir_path.endswith(".h5") or dir_path.endswith(".keras"):
-        model.save(dir_path)
+    # If a file extension was provided, save to that path. Otherwise save to a single
+    # HDF5 file using the given base path (e.g. 'models/dnn_pre_smote' -> 'models/dnn_pre_smote.h5')
+    base, ext = os.path.splitext(dir_path)
+    if ext.lower() in (".h5", ".keras", ".hdf5"):
+        target = dir_path
     else:
-        model.save(dir_path)
+        target = f"{dir_path}.h5"
 
-    print(f"Keras model saved: {dir_path}")
+    parent = os.path.dirname(target) or "."
+    os.makedirs(parent, exist_ok=True)
+
+    # Delegate to Keras model.save which supports both HDF5 files and SavedModel dirs
+    model.save(target)
+    print(f"Keras model saved: {target}")

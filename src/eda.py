@@ -13,7 +13,31 @@
 import pandas as pd
 import numpy as np
 import seaborn as sns
+import matplotlib
 import matplotlib.pyplot as plt
+import os
+
+
+# Helper: save figures to reports/ when using non-interactive backends (e.g. Agg)
+_EDA_FIG_IDX = 0
+def _save_or_show(name: str = None):
+    """Save the current matplotlib figure to reports/ if backend is non-interactive,
+    otherwise show it. Filenames are generated automatically when `name` is None.
+    """
+    global _EDA_FIG_IDX
+    backend = matplotlib.get_backend().lower()
+    os.makedirs("reports", exist_ok=True)
+    if name is None:
+        name = f"eda_{_EDA_FIG_IDX}"
+    filename = os.path.join("reports", f"{name}.png")
+    try:
+        if "agg" in backend:
+            plt.savefig(filename, bbox_inches="tight")
+            plt.close()
+        else:
+            plt.show()
+    finally:
+        _EDA_FIG_IDX += 1
 
 
 def basic_data_overview(df):
@@ -114,7 +138,7 @@ def class_distribution_analysis(df):
     plt.xlabel("Class")
     plt.ylabel("Count")
 
-    plt.show()
+    _save_or_show("class_distribution")
 
     return class_counts, class_percentage
 
@@ -147,7 +171,7 @@ def amount_analysis(df):
 
     plt.title("Transaction Amount Distribution")
 
-    plt.show()
+    _save_or_show("amount_distribution")
 
     # ---------------------------------------------------
     # Log Transformed Amount
@@ -163,7 +187,7 @@ def amount_analysis(df):
 
     plt.title("Log Transformed Amount Distribution")
 
-    plt.show()
+    _save_or_show("amount_log_distribution")
 
     # ---------------------------------------------------
     # Fraud vs Non-Fraud Amount Comparison
@@ -181,7 +205,7 @@ def amount_analysis(df):
         "Transaction Amount by Fraud Class"
     )
 
-    plt.show()
+    _save_or_show("amount_by_class")
 
 
 def correlation_analysis(df):
@@ -205,7 +229,7 @@ def correlation_analysis(df):
 
     plt.title("Feature Correlation Heatmap")
 
-    plt.show()
+    _save_or_show("correlation_heatmap")
 
 
 def generate_eda_report(df):

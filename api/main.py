@@ -5,6 +5,7 @@ import io
 import os
 import joblib
 import pickle
+import numpy as np
 
 app = FastAPI(title="Credit Card Fraud Detection API")
 
@@ -51,12 +52,22 @@ async def predict_csv(file: UploadFile = File(...), model_file: str = None):
     try:
         proba = model.predict_proba(X)
         if proba.shape[1] == 2:
-            fraud_proba = proba[:, 1].tolist()
+            fraud_proba = proba[:, 1]
         else:
-            fraud_proba = proba.max(axis=1).tolist()
-        preds = (pd.Series(fraud_proba) >= 0.5).astype(int).tolist()
+            fraud_proba = proba.max(axis=1)
+        # ensure ndarray
+        fraud_proba = np.array(fraud_proba).ravel()
+        preds = (fraud_proba >= 0.5).astype(int).tolist()
+        fraud_proba = fraud_proba.tolist()
     except Exception:
-        preds = model.predict(X).tolist()
-        fraud_proba = [1.0 if p == 1 else 0.0 for p in preds]
+        raw = model.predict(X)
+        arr = np.array(raw).ravel()
+        # if outputs look like logits or are outside [0,1], apply sigmoid
+        if arr.min() < 0 or arr.max() > 1:
+            probs = 1.0 / (1.0 + np.exp(-arr))
+        else:
+            probs = arr
+        preds = (probs >= 0.5).astype(int).tolist()
+        fraud_proba = probs.tolist()
 
     return {"predictions": preds, "probabilities": fraud_proba}

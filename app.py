@@ -14,8 +14,12 @@ MODELS_DIR = "models"
 
 
 def load_pickle(path: str):
-    with open(path, "rb") as f:
-        return pickle.load(f)
+    # Use joblib.load first (restores sklearn objects reliably), fall back to pickle
+    try:
+        return joblib.load(path)
+    except Exception:
+        with open(path, "rb") as f:
+            return pickle.load(f)
 
 
 def load_model(path: str):
@@ -67,22 +71,62 @@ def apply_preprocessors(df: pd.DataFrame, feature_cols, models_folder=MODELS_DIR
     preproc_path = os.path.join(models_folder, 'preprocessor.pkl')
     scaler_path = os.path.join(models_folder, 'scaler.pkl')
     encoder_path = os.path.join(models_folder, 'encoder.pkl')
+    # pipeline-compatible scaler names
+    amount_scaler_path = os.path.join(models_folder, 'amount_scaler.pkl')
+    feature_scaler_path = os.path.join(models_folder, 'feature_scaler.pkl')
 
     try:
         if os.path.exists(preproc_path):
             pre = load_pickle(preproc_path)
-            Xt = pre.transform(Xf)
-            return Xt
+            # If preprocessor file contains feature column list, apply ordering
+            if isinstance(pre, (list, tuple, np.ndarray)):
+                cols = list(pre)
+                missing = [c for c in cols if c not in Xf.columns]
+                if not missing:
+                    Xf = Xf[cols]
+                    return Xf
+                else:
+                    st.warning(f"preprocessor.pkl looks like feature columns but missing: {missing}; continuing")
+            elif hasattr(pre, 'transform'):
+                Xt = pre.transform(Xf)
+                return Xt
+            else:
+                st.warning("preprocessor.pkl is not a transformer; skipping")
+        # Support older pipeline output names: apply amount_scaler and feature_scaler
+        if os.path.exists(amount_scaler_path):
+            amt_scaler = load_pickle(amount_scaler_path)
+            if hasattr(amt_scaler, 'transform'):
+                if 'Amount' in Xf.columns:
+                    Xf['Amount'] = amt_scaler.transform(Xf[['Amount']])
+            else:
+                st.warning('Loaded amount_scaler.pkl does not have transform(); skipping')
+
+        if os.path.exists(feature_scaler_path):
+            feat_scaler = load_pickle(feature_scaler_path)
+            if hasattr(feat_scaler, 'transform'):
+                cols = [c for c in Xf.columns if c != 'Amount']
+                if cols:
+                    Xf[cols] = feat_scaler.transform(Xf[cols])
+            else:
+                st.warning('Loaded feature_scaler.pkl does not have transform(); skipping')
+
+        # backward-compatible single scaler name
         if os.path.exists(scaler_path):
             scaler = load_pickle(scaler_path)
-            Xf = scaler.transform(Xf)
+            if hasattr(scaler, 'transform'):
+                Xf = scaler.transform(Xf)
+            else:
+                st.warning('Loaded scaler.pkl does not have transform(); skipping')
         if os.path.exists(encoder_path):
             enc = load_pickle(encoder_path)
-            try:
-                Xf = enc.transform(Xf)
-            except Exception:
-                # If encoder expects categorical columns only, skip here
-                pass
+            if hasattr(enc, 'transform'):
+                try:
+                    Xf = enc.transform(Xf)
+                except Exception:
+                    # If encoder expects categorical columns only, skip here
+                    st.warning('Encoder transform failed; skipping encoder')
+            else:
+                st.warning('Loaded encoder.pkl does not have transform(); skipping')
     except Exception as e:
         st.warning(f"Preprocessing failed: {e}")
 
@@ -102,10 +146,16 @@ def predict_with_model(model, X):
         return preds, fraud_proba
     except Exception:
         try:
-            preds = model.predict(X)
-            # If predict gives 0/1, assign probability 1 for predicted class
-            proba = np.where(preds == 1, 1.0, 0.0)
-            return preds, proba
+            raw = model.predict(X)
+            # Normalize to 1d array
+            arr = np.array(raw).ravel()
+            # If outputs are not probabilities (e.g. logits), apply sigmoid
+            if arr.min() < 0 or arr.max() > 1:
+                probs = 1.0 / (1.0 + np.exp(-arr))
+            else:
+                probs = arr
+            preds = (probs >= 0.5).astype(int)
+            return preds, probs
         except Exception as e:
             st.error(f"Model prediction failed: {e}")
             return None, None
@@ -159,6 +209,25 @@ def main():
     st.sidebar.markdown("---")
     st.sidebar.markdown("Place your trained models and preprocessing files in the `models/` folder.")
     st.sidebar.markdown("Supported preprocessing files: `preprocessor.pkl`, `scaler.pkl`, `encoder.pkl`, `feature_columns.pkl`.")
+
+    # Debug helper: show which preprocessor files the running app actually sees
+    debug = st.sidebar.checkbox("Debug: show loaded preprocessors")
+    if debug:
+        st.sidebar.markdown("**Preprocessor debug**")
+        files_to_check = [
+            'feature_columns.pkl', 'preprocessor.pkl', 'scaler.pkl',
+            'amount_scaler.pkl', 'feature_scaler.pkl', 'encoder.pkl'
+        ]
+        for fname in files_to_check:
+            p = os.path.join(MODELS_DIR, fname)
+            exists = os.path.exists(p)
+            st.sidebar.write(f"{fname}: exists={exists} — {os.path.abspath(p)}")
+            if exists:
+                try:
+                    obj = load_pickle(p)
+                    st.sidebar.write(f"  type={type(obj)}; has_transform={hasattr(obj,'transform')}")
+                except Exception as e:
+                    st.sidebar.write(f"  failed to load: {e}")
 
     if df is not None:
         st.subheader("Data Preview")

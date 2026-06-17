@@ -16,4 +16,3 @@ venv/
 .env
 
 data/raw/creditcard.csv
-models/rf_model_post_smote.pkl
