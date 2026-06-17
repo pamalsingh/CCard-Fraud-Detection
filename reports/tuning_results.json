@@ -1,0 +1,31 @@
+{
+  "model": "all",
+  "best_params": {
+    "rf": {
+      "best_params": {
+        "class_weight": "balanced",
+        "max_depth": 15,
+        "n_estimators": 200
+      },
+      "best_score": 0.8440465917251968
+    },
+    "xgb": {
+      "best_params": {
+        "learning_rate": 0.1,
+        "max_depth": 8,
+        "n_estimators": 500
+      },
+      "best_score": 0.8544654844529689
+    },
+    "dnn": {
+      "best_params": {
+        "learning_rate": 0.001,
+        "dropout_rate": 0.5,
+        "batch_size": 256,
+        "epochs": 30
+      },
+      "best_score": 0.8843537414965986
+    }
+  },
+  "best_score": 0.0
+}
