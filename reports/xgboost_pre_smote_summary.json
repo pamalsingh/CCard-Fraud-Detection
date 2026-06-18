@@ -8,6 +8,6 @@
   "pr_auc": 0.820156578981929,
   "support_pos": 95,
   "hyperparameters": "None",
-  "inference_latency_ms": 0.0029783121511748212,
-  "run_timestamp": "2026-06-15T15:36:04.423933"
+  "inference_latency_ms": 0.002470442680117149,
+  "run_timestamp": "2026-06-18T20:08:45.717942"
 }

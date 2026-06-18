@@ -1,13 +1,13 @@
 {
   "model": "random_forest_post_smote",
   "smote_used": true,
-  "precision": 0.9,
-  "recall": 0.7578947368421053,
-  "f1": 0.8228571428571428,
-  "roc_auc": 0.9773805265666329,
-  "pr_auc": 0.8085472724235406,
+  "precision": 0.7653061224489796,
+  "recall": 0.7894736842105263,
+  "f1": 0.7772020725388601,
+  "roc_auc": 0.9682398879938012,
+  "pr_auc": 0.7943317315502191,
   "support_pos": 95,
-  "hyperparameters": "{'bootstrap': True, 'ccp_alpha': 0.0, 'class_weight': 'balanced', 'criterion': 'gini', 'max_depth': 25, 'max_features': 'sqrt', 'max_leaf_nodes': None, 'max_samples': None, 'min_impurity_decrease': 0.0, 'min_samples_leaf': 1, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0, 'monotonic_cst': None, 'n_estimators': 300, 'n_jobs': -1, 'oob_score': False, 'random_state': 42, 'verbose': 0, 'warm_start': False}",
-  "inference_latency_ms": 0.0068810603483585465,
-  "run_timestamp": "2026-06-15T15:42:17.646250"
+  "hyperparameters": "{'bootstrap': True, 'ccp_alpha': 0.0, 'class_weight': 'balanced', 'criterion': 'gini', 'max_depth': 15, 'max_features': 'sqrt', 'max_leaf_nodes': None, 'max_samples': None, 'min_impurity_decrease': 0.0, 'min_samples_leaf': 1, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0, 'monotonic_cst': None, 'n_estimators': 200, 'n_jobs': -1, 'oob_score': False, 'random_state': 42, 'verbose': 0, 'warm_start': False}",
+  "inference_latency_ms": 0.00455191426738822,
+  "run_timestamp": "2026-06-18T20:12:41.992467"
 }

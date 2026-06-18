@@ -70,7 +70,6 @@ def apply_preprocessors(df: pd.DataFrame, feature_cols, models_folder=MODELS_DIR
     # Apply preprocessor if exists
     preproc_path = os.path.join(models_folder, 'preprocessor.pkl')
     scaler_path = os.path.join(models_folder, 'scaler.pkl')
-    encoder_path = os.path.join(models_folder, 'encoder.pkl')
     # pipeline-compatible scaler names
     amount_scaler_path = os.path.join(models_folder, 'amount_scaler.pkl')
     feature_scaler_path = os.path.join(models_folder, 'feature_scaler.pkl')
@@ -117,16 +116,7 @@ def apply_preprocessors(df: pd.DataFrame, feature_cols, models_folder=MODELS_DIR
                 Xf = scaler.transform(Xf)
             else:
                 st.warning('Loaded scaler.pkl does not have transform(); skipping')
-        if os.path.exists(encoder_path):
-            enc = load_pickle(encoder_path)
-            if hasattr(enc, 'transform'):
-                try:
-                    Xf = enc.transform(Xf)
-                except Exception:
-                    # If encoder expects categorical columns only, skip here
-                    st.warning('Encoder transform failed; skipping encoder')
-            else:
-                st.warning('Loaded encoder.pkl does not have transform(); skipping')
+        # Note: encoder.pkl support removed — encode categorical features during training
     except Exception as e:
         st.warning(f"Preprocessing failed: {e}")
 

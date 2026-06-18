@@ -75,6 +75,24 @@ def run_training_pipeline(tuning_file: str = None):
         feature_scaler
     ) = preprocess_data(df)
 
+    # Save preprocessing artifacts for downstream inference
+    try:
+        # feature columns ordering used for training
+        feature_cols = list(X_train.columns)
+        from src.save_artifacts import save_scaler, save_preprocessor
+        # save individual scalers
+        save_scaler(amount_scaler, "models/amount_scaler.pkl")
+        save_scaler(feature_scaler, "models/feature_scaler.pkl")
+        # save combined preprocessor wrapper and a generic scaler.pkl for compatibility
+        save_preprocessor(amount_scaler, feature_scaler, feature_cols, "models/preprocessor.pkl")
+        save_scaler(feature_scaler, "models/scaler.pkl")
+        # save feature_columns list
+        import joblib
+        joblib.dump(feature_cols, "models/feature_columns.pkl")
+        print("Saved preprocessing artifacts to models/")
+    except Exception as e:
+        print("Failed to save preprocessing artifacts:", e)
+
     # Attempt to load tuning results (optional). If present, these will be
     # used to pass tuned hyperparameters into the training functions.
     tuning_path = Path(tuning_file) if tuning_file else Path("reports/tuning_results.json")

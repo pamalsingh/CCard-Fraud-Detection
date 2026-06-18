@@ -1,13 +1,13 @@
 {
   "model": "dnn_pre_smote",
   "smote_used": false,
-  "precision": 0.8674698795180723,
-  "recall": 0.7578947368421053,
-  "f1": 0.8089887640449438,
-  "roc_auc": 0.9670180021906986,
-  "pr_auc": 0.7352089503448861,
+  "precision": 0.8690476190476191,
+  "recall": 0.7684210526315789,
+  "f1": 0.8156424581005587,
+  "roc_auc": 0.9646297877400779,
+  "pr_auc": 0.7416316937892895,
   "support_pos": 95,
   "hyperparameters": "None",
-  "inference_latency_ms": 0.029517456175421935,
-  "run_timestamp": "2026-06-15T15:36:22.535246"
+  "inference_latency_ms": 0.03884123347515039,
+  "run_timestamp": "2026-06-18T20:09:20.275427"
 }

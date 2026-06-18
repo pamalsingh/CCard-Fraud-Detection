@@ -1,13 +1,13 @@
 {
   "model": "random_forest_pre_smote",
   "smote_used": false,
-  "precision": 0.9714285714285714,
-  "recall": 0.7157894736842105,
-  "f1": 0.8242424242424242,
-  "roc_auc": 0.9434960501463717,
-  "pr_auc": 0.8133527068606966,
+  "precision": 0.92,
+  "recall": 0.7263157894736842,
+  "f1": 0.8117647058823529,
+  "roc_auc": 0.9597933422460142,
+  "pr_auc": 0.79679251055,
   "support_pos": 95,
   "hyperparameters": "None",
-  "inference_latency_ms": 0.004413487295872004,
-  "run_timestamp": "2026-06-15T15:35:56.062842"
+  "inference_latency_ms": 0.002710184733162549,
+  "run_timestamp": "2026-06-18T20:08:38.297446"
 }
