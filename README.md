@@ -102,7 +102,7 @@ python pipelines/train_pipeline.py --tuning-file reports/tuning_results.json
 1. Place your trained model and optional preprocessing artifacts in the `models/` folder. Supported files:
 
 - `xgboost_pre_smote.pkl`, `random_forest_pre_smote.pkl`, etc.
-- `preprocessor.pkl`, `scaler.pkl`, `encoder.pkl`, `feature_columns.pkl`
+- `preprocessor.pkl`, `scaler.pkl`, `feature_columns.pkl`, `amount_scaler.pkl`, `feature_scaler.pkl`
 2. Install dependencies:
 
 ```bash
